@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ReviewHub — Honest Product Reviews & Deals</title>
+  <meta name="description" content="ReviewHub is a clean, fast product review site with affiliate links, filters, search, and SEO-friendly markup. 100% client-side and runs offline." />
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="ReviewHub — Honest Product Reviews" />
+  <meta property="og:description" content="Compare products, read reviews, and find the best deals." />
+  <meta property="og:type" content="website" />
+
+  <!-- PWA-ish basics (optional for offline use) -->
+  <link rel="manifest" href="data:application/manifest+json,{&quot;name&quot;:&quot;ReviewHub&quot;,&quot;short_name&quot;:&quot;ReviewHub&quot;,&quot;start_url&quot;:&quot;.&quot;,&quot;display&quot;:&quot;standalone&quot;}" />
+
+  <style>
+    :root {
+      --bg: #0b0d10;
+      --panel: #12161b;
+      --muted: #9aa7b2;
+      --text: #ecf2f8;
+      --brand: #4f8cff;
+      --accent: #00d3a7;
+      --card: #161c22;
+      --danger: #ff5c5c;
+      --star: #f0c64a;
+      --ring: 0 0 0 3px rgba(79, 140, 255, .25);
+      --shadow: 0 10px 25px rgba(0,0,0,.35);
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0; font: 16px/1.6 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      background: radial-gradient(1200px 800px at 10% -10%, rgba(79,140,255,.08), transparent 60%),
+                  radial-gradient(900px 700px at 110% -20%, rgba(0,211,167,.08), transparent 50%),
+                  var(--bg);
+      color: var(--text);
+    }
+    a { color: inherit; text-decoration: none; }
+    .container { max-width: 1180px; margin: 0 auto; padding: 24px; }
+    header.topbar {
+      position: sticky; top: 0; z-index: 50;
+      backdrop-filter: saturate(140%) blur(8px);
+      background: rgba(11,13,16, .6); border-bottom: 1px solid rgba(255,255,255,.06);
+    }
+    .brand { display: flex; align-items: center; gap: 12px; font-weight: 800; letter-spacing: .3px; }
+    .logo { width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, var(--brand), var(--accent)); box-shadow: var(--shadow); }
+    .grid { display: grid; gap: 18px; }
+    @media (min-width: 720px) { .grid.cols-3 { grid-template-columns: repeat(3, minmax(0,1fr)); } }
+    .card {
+      background: linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.00) 40%), var(--card);
+      border: 1px solid rgba(255,255,255,.06);
+      border-radius: 18px; box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .card:hover { transform: translateY(-2px); transition: transform .2s ease; }
+    .card .media { aspect-ratio: 16/10; display: grid; place-items: center; background: #0e1216; }
+    .ph {
+      width: 100%; height: 100%; display: grid; place-items: center;
+      background: radial-gradient(600px 300px at 50% 0%, rgba(79, 140, 255, .25), transparent 60%), #10161c;
+      color: #cfe2ff; font-weight: 700; letter-spacing: .4px;
+    }
+    .p-16 { padding: 16px; } .p-20 { padding: 20px; } .mt-8 { margin-top: 8px; } .mt-16 { margin-top: 16px; }
+    .title { font-size: 20px; font-weight: 700; }
+    .muted { color: var(--muted); font-size: 14px; }
+    .row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .spacer { flex: 1; }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 10px 14px; border-radius: 12px; background: var(--brand); color: white; font-weight: 700; border: 0;
+      box-shadow: var(--shadow); cursor: pointer;
+    }
+    .btn.secondary { background: transparent; color: var(--text); border: 1px solid rgba(255,255,255,.14); }
+    .btn.ghost { background: transparent; color: var(--muted); }
+    .btn:focus { outline: none; box-shadow: var(--ring); }
+    .badge { font-size: 12px; padding: 4px 8px; border-radius: 999px; border: 1px solid rgba(255,255,255,.16); color: var(--muted); }
+    .stars { color: var(--star); letter-spacing: 1px; }
+    .price { font-weight: 800; }
+    .toolbar {
+      display: grid; gap: 12px; grid-template-columns: 1fr; padding: 14px; border: 1px solid rgba(255,255,255,.08); border-radius: 16px; background: rgba(255,255,255,.02);
+    }
+    @media (min-width: 860px) { .toolbar { grid-template-columns: 1.4fr 1fr 1fr 120px; } }
+    input, select {
+      width: 100%; padding: 12px 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,.14);
+      background: #0c1116; color: var(--text);
+    }
+    .pillnav { display: flex; gap: 10px; flex-wrap: wrap; }
+    .pillnav a { padding: 8px 12px; border-radius: 999px; border: 1px solid rgba(255,255,255,.14); color: var(--muted); }
+    .pillnav a.active { background: var(--brand); color: white; border-color: transparent; }
+    footer { color: var(--muted); font-size: 14px; padding: 40px 24px 60px; text-align: center; }
+    .disclosure { border: 1px dashed rgba(255,255,255,.2); padding: 12px 14px; border-radius: 12px; font-size: 14px; color: var(--muted); }
+    .modal {
+      position: fixed; inset: 0; display: none; place-items: center; background: rgba(0,0,0,.6);
+    }
+    .modal.open { display: grid; }
+    .modal > .sheet {
+      width: min(860px, 92vw);
+      background: var(--panel); border: 1px solid rgba(255,255,255,.12); border-radius: 18px; padding: 16px;
+      box-shadow: var(--shadow);
+    }
+    .list { margin: 0; padding: 0; list-style: none; display: grid; gap: 10px; }
+    .list li { display: grid; grid-template-columns: 1fr auto; gap: 10px; padding: 8px 10px; border-radius: 12px; background: rgba(255,255,255,.02); border: 1px solid rgba(255,255,255,.06);}
+    .sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; border: 0; padding: 0; white-space: nowrap; clip-path: inset(50%); clip: rect(0,0,0,0); overflow: hidden; }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="container row">
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <span>ReviewHub</span>
+      </div>
+      <nav class="spacer pillnav" id="pillnav">
+        <a href="#/" class="active">Home</a>
+        <a href="#/guides">Guides</a>
+        <a href="#/about">About</a>
+        <a href="#/contact">Contact</a>
+      </nav>
+      <button class="btn secondary" id="toggleTheme" aria-label="Toggle theme">🌓</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Disclosure -->
+    <div class="disclosure">
+      <strong>Affiliate Disclosure:</strong> Some links on this site are affiliate links. If you use them to make a purchase, we may earn a commission at no extra cost to you. We only recommend products we genuinely review.
+    </div>
+
+    <!-- Toolbar -->
+    <div class="toolbar mt-16" id="toolbar">
+      <input id="search" type="search" placeholder="Search products… (e.g., headphones, watch, router)" aria-label="Search products" />
+      <select id="category" aria-label="Filter by category">
+        <option value="all">All categories</option>
+      </select>
+      <select id="sort" aria-label="Sort products">
+        <option value="featured">Sort: Featured</option>
+        <option value="rating">Sort: Rating (high → low)</option>
+        <option value="priceLow">Sort: Price (low → high)</option>
+        <option value="priceHigh">Sort: Price (high → low)</option>
+      </select>
+      <button class="btn" id="subscribeBtn">Subscribe</button>
+    </div>
+
+    <!-- Product Grid -->
+    <section class="mt-16">
+      <div class="row"><h2 style="margin:0">Top Picks</h2> <span class="spacer"></span><span class="badge" id="countBadge"></span></div>
+      <div class="grid cols-3 mt-16" id="grid"></div>
+    </section>
+
+    <!-- Guides (renders on route) -->
+    <section id="guides" style="display:none" class="mt-16">
+      <h2 style="margin:0">Latest Guides</h2>
+      <ul class="list mt-16">
+        <li><span>How to choose the right headphones in 2025 (comfort, codec, ANC)</span><a class="btn ghost" href="#">Read →</a></li>
+        <li><span>Router placement tips for best Wi‑Fi</span><a class="btn ghost" href="#">Read →</a></li>
+        <li><span>Monitor buyer's checklist: size, panel, refresh rate</span><a class="btn ghost" href="#">Read →</a></li>
+      </ul>
+    </section>
+
+    <!-- Static pages -->
+    <section id="about" style="display:none" class="mt-16">
+      <h2>About ReviewHub</h2>
+      <p class="muted">We hand-test popular products and compile easy-to-skim reviews with clear pros/cons and real-world benchmarks. Our goal is trust, clarity, and helping you buy once.</p>
+    </section>
+
+    <section id="contact" style="display:none" class="mt-16">
+      <h2>Contact</h2>
+      <p class="muted">Have a product you'd like us to review? Email <a href="mailto:hello@example.com">hello@example.com</a>.</p>
+      <form class="mt-16" onsubmit="event.preventDefault(); alert('Thanks! We will reply soon.'); this.reset();">
+        <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 12px;">
+          <input required placeholder="Name" />
+          <input type="email" required placeholder="Email" />
+        </div>
+        <textarea style="margin-top:12px;width:100%;min-height:120px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:#0c1116;color:var(--text);padding:12px" placeholder="Your message"></textarea>
+        <div class="mt-16"><button class="btn">Send</button></div>
+      </form>
+    </section>
+  </main>
+
+  <footer>
+    <div>© <span id="year"></span> ReviewHub — All rights reserved.</div>
+    <div style="margin-top:8px">Built with ❤ — Runs entirely in your browser.</div>
+  </footer>
+
+  <!-- Quick product modal -->
+  <div class="modal" id="productModal" aria-hidden="true" role="dialog" aria-labelledby="modalTitle">
+    <div class="sheet">
+      <div class="row">
+        <h3 id="modalTitle" style="margin:6px 0">Product</h3>
+        <span class="spacer"></span>
+        <button class="btn secondary" onclick="closeModal()">Close ✕</button>
+      </div>
+      <div id="modalBody" class="mt-16"></div>
+    </div>
+  </div>
+
+  <!-- Minimal templating + state -->
+  <script>
+    const STATE = {
+      q: '',
+      category: 'all',
+      sort: 'featured',
+      theme: localStorage.getItem('theme') || 'dark',
+      newsletter: JSON.parse(localStorage.getItem('newsletter') || '[]')
+    };
+
+    // Demo catalog (edit/extend freely). 'link' is your affiliate URL.
+    const CATALOG = [
+      { id: 'hp100', name: 'Auris Pro ANC Headphones', cat: 'Audio', price: 129.99, rating: 4.6, link: '#', pros: ['Excellent ANC', '36h battery', 'USB‑C fast charge'], cons: ['Clamps for large heads'], img: '🎧' },
+      { id: 'sw200', name: 'VitaFit Smart Watch 2', cat: 'Wearables', price: 89.00, rating: 4.4, link: '#', pros: ['AMOLED display', 'Great sleep tracking'], cons: ['Average straps'], img: '⌚' },
+      { id: 'ch300', name: 'ErgoFlex Mesh Chair', cat: 'Office', price: 259.00, rating: 4.8, link: '#', pros: ['Superb lumbar', 'Breathable mesh'], cons: ['Arm wobble at max height'], img: '💺' },
+      { id: 'rt400', name: 'StreamBeam Wi‑Fi 6 Router', cat: 'Networking', price: 149.00, rating: 4.5, link: '#', pros: ['Wi‑Fi 6', 'Strong range'], cons: ['Bulky'], img: '📶' },
+      { id: 'kb500', name: 'KeyZen Low‑Profile Keyboard', cat: 'Peripherals', price: 79.00, rating: 4.2, link: '#', pros: ['Silent switches', 'Multi‑device'], cons: ['No backlight'], img: '⌨️' },
+      { id: 'ms600', name: 'TrackPro Silent Mouse', cat: 'Peripherals', price: 39.00, rating: 4.3, link: '#', pros: ['Quiet clicks', 'Great battery'], cons: ['Small for large hands'], img: '🖱️' },
+      { id: 'mn700', name: 'ColorEdge 27” 4K Monitor', cat: 'Monitors', price: 399.00, rating: 4.7, link: '#', pros: ['Vivid colors', 'Slim bezels'], cons: ['Basic stand'], img: '🖥️' },
+      { id: 'mc800', name: 'BrewMate Coffee Maker', cat: 'Home', price: 59.00, rating: 4.1, link: '#', pros: ['Programmable', 'Compact'], cons: ['Small carafe'], img: '☕' }
+    ];
+
+    // Populate filters
+    const catEl = document.getElementById('category');
+    const cats = ['all', ...Array.from(new Set(CATALOG.map(x => x.cat)))];
+    cats.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c; opt.textContent = (c === 'all' ? 'All categories' : c);
+      catEl.appendChild(opt);
+    });
+
+    // DOM refs
+    const grid = document.getElementById('grid');
+    const search = document.getElementById('search');
+    const sort = document.getElementById('sort');
+    const countBadge = document.getElementById('countBadge');
+    const guidesSec = document.getElementById('guides');
+    const aboutSec = document.getElementById('about');
+    const contactSec = document.getElementById('contact');
+    const pillnav = document.getElementById('pillnav');
+    const modal = document.getElementById('productModal');
+    const modalBody = document.getElementById('modalBody');
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // Events
+    search.addEventListener('input', e => { STATE.q = e.target.value.toLowerCase(); render(); });
+    catEl.addEventListener('change', e => { STATE.category = e.target.value; render(); });
+    sort.addEventListener('change', e => { STATE.sort = e.target.value; render(); });
+
+    // Subscribe
+    document.getElementById('subscribeBtn').addEventListener('click', () => {
+      const email = prompt('Enter your email to subscribe to deal alerts:');
+      if (!email) return;
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { alert('Please enter a valid email.'); return; }
+      if (STATE.newsletter.includes(email)) { alert('You are already subscribed!'); return; }
+      STATE.newsletter.push(email);
+      localStorage.setItem('newsletter', JSON.stringify(STATE.newsletter));
+      alert('Subscribed! You will receive occasional deal alerts.');
+    });
+
+    // Theme toggle
+    const toggleTheme = document.getElementById('toggleTheme');
+    function applyTheme() {
+      if (STATE.theme === 'light') {
+        document.documentElement.style.setProperty('--bg','#f6f8fb');
+        document.documentElement.style.setProperty('--panel','#ffffff');
+        document.documentElement.style.setProperty('--card','#ffffff');
+        document.documentElement.style.setProperty('--text','#0f1720');
+        document.documentElement.style.setProperty('--muted','#5f6b76');
+      } else {
+        document.documentElement.removeAttribute('style');
+      }
+    }
+    toggleTheme.addEventListener('click', () => {
+      STATE.theme = (STATE.theme === 'dark') ? 'light' : 'dark';
+      localStorage.setItem('theme', STATE.theme);
+      applyTheme();
+    });
+    applyTheme();
+
+    // Routing (hash-based)
+    function route() {
+      const path = location.hash.replace('#','') || '/';
+      document.querySelectorAll('.pillnav a').forEach(a => a.classList.remove('active'));
+      const active = Array.from(document.querySelectorAll('.pillnav a')).find(a => a.getAttribute('href') === '#'+path);
+      if (active) active.classList.add('active');
+
+      // Toggle sections
+      const onHome = (path === '/');
+      document.querySelector('main .disclosure').style.display = onHome ? '' : 'none';
+      document.getElementById('toolbar').style.display = onHome ? '' : 'none';
+      document.getElementById('grid').parentElement.style.display = onHome ? '' : 'none';
+
+      guidesSec.style.display = (path === '/guides') ? '' : 'none';
+      aboutSec.style.display = (path === '/about') ? '' : 'none';
+      contactSec.style.display = (path === '/contact') ? '' : 'none';
+    }
+    window.addEventListener('hashchange', route);
+    route();
+
+    // Render products
+    function render() {
+      let items = CATALOG.slice();
+      if (STATE.q) { items = items.filter(x => (x.name + ' ' + x.cat).toLowerCase().includes(STATE.q)); }
+      if (STATE.category !== 'all') { items = items.filter(x => x.cat === STATE.category); }
+
+      switch (STATE.sort) {
+        case 'rating': items.sort((a,b) => b.rating - a.rating); break;
+        case 'priceLow': items.sort((a,b) => a.price - b.price); break;
+        case 'priceHigh': items.sort((a,b) => b.price - a.price); break;
+        default: /* featured */ items.sort((a,b) => b.rating*10 - a.rating*10 + (Math.random()-.5)); break;
+      }
+
+      countBadge.textContent = items.length + ' result' + (items.length !== 1 ? 's' : '');
+
+      grid.innerHTML = items.map(x => cardHTML(x)).join('');
+      // Attach button handlers
+      items.forEach(x => {
+        const btn = document.getElementById('buy-'+x.id);
+        btn?.addEventListener('click', () => window.open(appendAffiliate(x.link), '_blank'));
+        const more = document.getElementById('more-'+x.id);
+        more?.addEventListener('click', () => openModal(x));
+      });
+    }
+
+    function stars(n) {
+      const full = '★'.repeat(Math.round(n));
+      const rest = '☆'.repeat(5 - Math.round(n));
+      return `<span class="stars" aria-label="${n} out of 5 stars">${full}${rest}</span>`;
+    }
+
+    function cardHTML(x) {
+      return `
+      <article class="card" aria-labelledby="t-${x.id}">
+        <div class="media"><div class="ph" aria-hidden="true" style="font-size:48px">${x.img}</div></div>
+        <div class="p-16">
+          <div class="row">
+            <h3 id="t-${x.id}" class="title" style="margin:0">${x.name}</h3>
+            <span class="spacer"></span>
+            <span class="badge">${x.cat}</span>
+          </div>
+          <div class="mt-8">${stars(x.rating)} <span class="muted">(${x.rating.toFixed(1)})</span></div>
+          <ul class="list mt-8">
+            ${x.pros.map(p => `<li><span>✓ ${p}</span><span class="badge">Pro</span></li>`).join('')}
+            ${x.cons.map(c => `<li><span>• ${c}</span><span class="badge">Con</span></li>`).join('')}
+          </ul>
+          <div class="row mt-16">
+            <div class="price">$${x.price.toFixed(2)}</div>
+            <span class="spacer"></span>
+            <button id="more-${x.id}" class="btn secondary">Details</button>
+            <button id="buy-${x.id}" class="btn">Buy with Deal →</button>
+          </div>
+        </div>
+      </article>`;
+    }
+
+    function openModal(x) {
+      modalBody.innerHTML = `
+        <div class="row">
+          <div class="ph" style="width:140px;height:110px;border-radius:12px;font-size:42px">${x.img}</div>
+          <div>
+            <div class="title">${x.name}</div>
+            <div class="muted mt-8">${stars(x.rating)} • <span class="badge">${x.cat}</span></div>
+            <div class="mt-8">Price: <strong>$${x.price.toFixed(2)}</strong></div>
+          </div>
+          <span class="spacer"></span>
+          <button class="btn" onclick="window.open('${appendAffiliate(x.link)}','_blank')">Go to Offer →</button>
+        </div>
+        <div class="mt-16">
+          <h4 style="margin:0 0 8px 0">Why we like it</h4>
+          <p class="muted">Balanced, practical choice for most people. See pros/cons above. We continuously monitor pricing to highlight the best value.</p>
+        </div>
+        <div class="mt-16">
+          <h4 style="margin:0 0 8px 0">Alternatives</h4>
+          <ul class="list">
+            ${suggestAlternatives(x).map(a => `<li><span>${a.name}</span><a class="btn ghost" href="${appendAffiliate(a.link)}" target="_blank" rel="noopener">Check</a></li>`).join('')}
+          </ul>
+        </div>
+      `;
+      modal.classList.add('open');
+      modal.setAttribute('aria-hidden','false');
+    }
+    function closeModal() { modal.classList.remove('open'); modal.setAttribute('aria-hidden','true'); }
+    window.closeModal = closeModal;
+
+    function suggestAlternatives(x) {
+      return CATALOG.filter(i => i.cat === x.cat && i.id !== x.id).slice(0,3);
+    }
+
+    function appendAffiliate(url) {
+      // Replace with your real affiliate parameters/tracking ID
+      const tag = 'affid=YOUR_ID';
+      if (!url || url === '#') return '#';
+      return url.includes('?') ? `${url}&${tag}` : `${url}?${tag}`;
+    }
+
+    // Schema.org example (edit as you like)
+    const schema = {
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      "itemListElement": CATALOG.map((p, i) => ({
+        "@type": "ListItem",
+        "position": i + 1,
+        "url": "https://example.com/#/product/" + p.id,
+        "name": p.name
+      }))
+    };
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.textContent = JSON.stringify(schema);
+    document.head.appendChild(script);
+
+    // Initial render
+    render();
+  </script>
+</body>
+</html>
